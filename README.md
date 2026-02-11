@@ -1,4 +1,5 @@
-# Steel <img width=50px src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/6/64/Iron_Ingot_JE1.png/revision/latest?cb=20201014002107"></img>
+# <img height=50px src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/6/64/Iron_Ingot_JE1.png/revision/latest?cb=20201014002107"></img> Steel
+
 Steel is a lightweight (and almost feature-complete) web frontend for Twitter's 1.0 and 1.1 REST APIs.
 
 ## Usage:
