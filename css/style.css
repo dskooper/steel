@@ -1,0 +1,560 @@
+/* IE6-Compatible Stylesheet for Twitter Frontend */
+
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    background-color: #a8b0b2;
+    color: #333;
+}
+
+/* Container */
+.container {
+    width: 800px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    min-height: 500px;
+}
+
+/* Header */
+.header {
+    background-color: #a8b0b2;
+    padding: 10px;
+    border-bottom: 2px solid #a8b0b2;
+}
+
+.header h1 {
+    color: #ffffff;
+    font-size: 24px;
+    margin: 0;
+    padding: 5px 0;
+}
+
+.header .user-info {
+    color: #ffffff;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.header a {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+/* Navigation */
+.nav {
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ccc;
+    padding: 0;
+    overflow: hidden;
+}
+
+.nav a {
+    float: left;
+    display: block;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    border-right: 1px solid #ddd;
+}
+
+.nav a:hover {
+    background-color: #e0e0e0;
+}
+
+.nav a.active {
+    background-color: #a8b0b2;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Content area */
+.content {
+    padding: 15px;
+}
+
+.sidebar {
+    float: right;
+    width: 250px;
+    margin-left: 15px;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group textarea {
+    width: 95%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    font-size: 12px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.form-group textarea {
+    height: 80px;
+    resize: none;
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.form-group .help-text {
+    font-size: 11px;
+    color: #666;
+    margin-top: 3px;
+}
+
+/* Buttons */
+.btn {
+    padding: 3px 3px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    color: #333;
+    cursor: pointer;
+    font-size: 12px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn:hover {
+    background-color: #e0e0e0;
+}
+
+.btn-primary {
+    background-color: #a8b0b2;
+    color: #ffffff;
+    border-color: #8a9294;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background-color: #8a9294;
+}
+
+.btn-danger {
+    background-color: #d9534f;
+    color: #ffffff;
+    border-color: #d43f3a;
+}
+
+.btn-danger:hover {
+    background-color: #c9302c;
+}
+
+.btn-small {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+/* Tweet/Post styles */
+.tweet {
+    border-bottom: 1px solid #e1e8ed;
+    padding: 10px 0;
+}
+
+.tweet-header {
+    margin-bottom: 5px;
+}
+
+.tweet-avatar {
+    float: left;
+    width: 48px;
+    height: 48px;
+    margin-right: 10px;
+}
+
+.tweet-avatar img {
+    width: 48px;
+    height: 48px;
+    border: 1px solid #ccc;
+}
+
+.tweet-author {
+    font-weight: bold;
+    color: #333;
+}
+
+.tweet-author a {
+    color: #333;
+    text-decoration: none;
+}
+
+.tweet-author a:hover {
+    text-decoration: underline;
+}
+
+.tweet-username {
+    color: #8899a6;
+    font-size: 11px;
+}
+
+.tweet-date {
+    color: #8899a6;
+    font-size: 11px;
+    float: right;
+}
+
+.tweet-text {
+    margin-left: 58px;
+    line-height: 1.4;
+    margin-bottom: 5px;
+}
+
+.tweet-image {
+    margin-left: 58px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.tweet-image img {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    border: 1px solid #e1e8ed;
+    border-radius: 5px;
+}
+
+.tweet-actions {
+    margin-left: 58px;
+    font-size: 11px;
+}
+
+.tweet-actions a {
+    color: #657786;
+    text-decoration: none;
+    margin-right: 15px;
+}
+
+.tweet-actions a:hover {
+    color: #1da1f2;
+    text-decoration: underline;
+}
+
+/* User profile styles */
+.profile-header {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border: 1px solid #e1e8ed;
+    margin-bottom: 15px;
+}
+
+.profile-avatar {
+    float: left;
+    margin-right: 15px;
+}
+
+.profile-avatar img {
+    width: 73px;
+    height: 73px;
+    border: 2px solid #ccc;
+}
+
+.profile-info {
+    margin-left: 95px;
+}
+
+.profile-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.profile-username {
+    color: #657786;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.profile-bio {
+    margin-bottom: 8px;
+}
+
+.profile-stats {
+    margin-top: 10px;
+}
+
+.profile-stat {
+    display: inline;
+    margin-right: 15px;
+}
+
+.profile-stat strong {
+    color: #333;
+}
+
+/* Sidebar boxes */
+.box {
+    background-color: #f5f5f5;
+    border: 1px solid #e1e8ed;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.box-title {
+    font-weight: bold;
+    font-size: 13px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+/*
+.box-content {
+    font-size: 11px;
+}
+*/
+
+/* User list styles */
+.user-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.user-item:last-child {
+    border-bottom: none;
+}
+
+.user-avatar {
+    float: left;
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+}
+
+.user-avatar img {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ccc;
+}
+
+.user-name {
+    font-weight: bold;
+}
+
+.user-name a {
+    color: #333;
+    text-decoration: none;
+}
+
+.user-name a:hover {
+    text-decoration: underline;
+}
+
+.user-username {
+    color: #657786;
+    font-size: 11px;
+}
+
+/* Messages/Alerts */
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid transparent;
+}
+
+.alert-error {
+    background-color: #f2dede;
+    border-color: #ebccd1;
+    color: #a94442;
+}
+
+.alert-success {
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+    color: #3c763d;
+}
+
+.alert-info {
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+    color: #31708f;
+}
+
+/* Login page specific */
+.login-box {
+    width: 350px;
+    margin: 100px auto;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    padding: 20px;
+}
+
+.login-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #a8b0b2;
+}
+
+.login-box .form-group input[type="text"],
+.login-box .form-group input[type="password"] {
+    width: 93%;
+}
+
+.login-box .btn {
+    width: 100%;
+}
+
+/* Pagination */
+.pagination {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px 0;
+}
+
+.pagination a {
+    padding: 5px 10px;
+    margin: 0 5px;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    color: #333;
+    text-decoration: none;
+}
+
+.pagination a:hover {
+    background-color: #e0e0e0;
+}
+
+/* Direct Messages */
+.conversation-list {
+    border: 1px solid #e1e8ed;
+}
+
+.conversation-item {
+    padding: 10px;
+    border-bottom: 1px solid #e1e8ed;
+    cursor: pointer;
+}
+
+.conversation-item:hover {
+    background-color: #f5f8fa;
+}
+
+.message-container {
+    border: 1px solid #e1e8ed;
+    padding: 10px;
+    height: 300px;
+    overflow-y: scroll;
+    margin-bottom: 10px;
+}
+
+.message {
+    margin-bottom: 10px;
+    padding: 8px;
+}
+
+.message-sent {
+    background-color: #e8f5e9;
+    text-align: right;
+}
+
+.message-received {
+    background-color: #f5f5f5;
+    text-align: left;
+}
+
+.message-text {
+    margin-bottom: 3px;
+}
+
+.message-date {
+    font-size: 10px;
+    color: #657786;
+}
+
+/* Search results */
+.search-tabs {
+    border-bottom: 2px solid #a8b0b2;
+    margin-bottom: 15px;
+}
+
+.search-tabs a {
+    display: inline-block;
+    padding: 8px 15px;
+    margin-right: 5px;
+    background-color: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    border: 1px solid #ccc;
+    border-bottom: none;
+}
+
+.search-tabs a.active {
+    background-color: #a8b0b2;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Clearfix for floats */
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+/* IE6 specific hacks */
+* html .clearfix {
+    height: 1%;
+}
+
+* html .container {
+    height: 1%;
+}
+
+/* Footer */
+.footer {
+    clear: both;
+    padding: 15px;
+    text-align: center;
+    font-size: 11px;
+    color: #657786;
+    border-top: 1px solid #e1e8ed;
+}
+
+.footer a {
+    color: #657786;
+}
+
+/* Loading indicator */
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #657786;
+}
+
+/* Character counter */
+.char-counter {
+    position: absolute;
+    top: 5px;
+    right: 0px;
+    font-size: 11px;
+    color: #657786;
+}
+
+.char-counter.warning {
+    color: #ff9800;
+}
+
+.char-counter.error {
+    color: #f44336;
+}
