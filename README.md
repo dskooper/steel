@@ -2,6 +2,10 @@
 
 Steel is a lightweight (and almost feature-complete) web frontend for Twitter's 1.0 and 1.1 REST APIs.
 
+> [!NOTE]
+> You are currently viewing the "main" branch which uses `/1/` endpoints! <br>
+> For video/GIF support as well as all the other additional features in Twitter's 1.1 REST API, view [this branch](https://github.com/dskooper/steel/tree/v1.1).
+
 ## Usage:
 To use steel, you must provide your own compatible Twitter v1.0/v1.1 REST API in the form `http(s)://insert-api-here.com`
   - **Do not include a "/" at the end** as this client does not account for that :(
