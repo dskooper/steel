@@ -42,24 +42,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             if ($result === true) {
                 header("Location: index.php");
                 exit;
-            } else if (is_array($result) && isset($result['errors'])) {
-                // account for errors (user can't type for shit OR api is down)
-                $errorMessage = "Login failed: ";
-                if (isset($result['errors'][0]['message'])) {
-                    $apiError = $result['errors'][0]['message'];
-                    
-                    // Check if API is unreachable (HTTP errors or cURL errors)
-                    if (strpos($apiError, 'HTTP Code') !== false || strpos($apiError, 'cURL Error') !== false) {
-                        $errorMessage = "The API server is unreachable or down, make sure that you typed it correctly.";
+            } else {
+                $apiError = $result['errors'][0]['message'];
+
+                // Detect HTTP status codes properly
+                if (preg_match('/HTTP Code (\d+)/', $apiError, $matches)) {
+                    $statusCode = (int)$matches[1];
+                
+                    if ($statusCode === 401 || $statusCode === 403) {
+                        $errorMessage = "Incorrect username or password.";
+                    } elseif ($statusCode >= 500) {
+                        $errorMessage = "The API server is unreachable or down. Make sure you typed the URL correctly.";
                     } else {
                         $errorMessage .= $apiError;
                     }
+                
+                } elseif (strpos($apiError, 'cURL Error') !== false) {
+                    $errorMessage = "The API server is unreachable or down.";
                 } else {
-                    $errorMessage .= "Invalid credentials or API URL.";
+                    $errorMessage .= $apiError;
                 }
                 setError($errorMessage);
-            } else {
-                setError("Login failed for an unknown reason - please contact the developer.");
             }
         }
     }
@@ -77,6 +80,8 @@ include('header.php');
         This version of Steel is for the v1.1 REST API <b>only.</b> <br>
         For the v1 REST API version click <a href="../steel/login.php">here</a>. <br>
     </p>
+    
+    <br>
     
     <?php if (!empty($error)): ?>
     <div class="alert alert-error">
