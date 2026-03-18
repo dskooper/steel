@@ -2,13 +2,16 @@
 
 Steel is a lightweight (and almost feature-complete) web frontend for Twitter's 1.0 and 1.1 REST APIs.
 
+> [!NOTE]
+> You are currently viewing the "main" branch which uses `/1.1/` endpoints! <br>
+> If you want to use APIs which are only compatible with Twitter's 1.0 REST API, view [this branch](https://github.com/dskooper/steel/tree/main) instead.
+
 ## Usage:
-To use steel, you must provide your own compatible Twitter v1.0/v1.1 REST API in the form `http(s)://insert-api-here.com`
+To use steel, you must provide your own compatible Twitter v1.1 REST API in the form `http(s)://insert-api-here.com`
   - **Do not include a "/" at the end** as this client does not account for that :(
 
 ### List of available APIs
 This is a list of active APIs I know of (reminder that Steel works with **any** accurate implementation)
-- [BlueTweety](https://twb.preloading.dev)
 - [DigUpTheBird](https://tun.3a33.zip) (not 24/7)
 
 ### Why use Steel?
