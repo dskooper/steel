@@ -1,7 +1,7 @@
 <?php
 require_once('utils.php');
 
-$pageTitle = "Login - Steel";
+$pageTitle = "Login - Steel-1.1";
 
 $client = getTwitterClient();
 
@@ -17,26 +17,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $password = $_POST['password'];
     $apiUrl = $_POST['api_url'];
     $remember = isset($_POST['remember']);
-    
-    if (empty($username) || empty($password) || empty($apiUrl)) {
+
+    // input validation
+    // all we should check for (apiUrl) if its in the format http(s)://domain.tld WITHOUT /
+    if (!preg_match('/^https?:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/.*)?$/', $apiUrl)) {
+        setError("Please enter a valid API URL (must start with http:// or https:// and be a valid domain).");
+    } else if (substr($apiUrl, -1) === '/') {
+        setError("API URL should not end with a slash (/). Please remove it.");
+    } else if (strlen($username) > 128 || strlen($password) > 128 || strlen($apiUrl) > 128) {
+        setError("Input values are too long. Please limit to 128 characters.");
+    } else if (preg_match('/[^\w\-\.@]/', $username) || preg_match('/[^\w\-\.@\/:]/', $apiUrl) || strpos($apiUrl, ' ') !== false) {
+        setError("Input contains invalid characters.");
+    } else if (empty($username) || empty($password) || empty($apiUrl)) {
         setError("Please fill in all fields.");
     } else {
-        $result = $client->authenticate($username, $password, $apiUrl, $remember);
+        // First, check if the API supports v1.1 endpoints
+        $versionCheck = $client->checkApiVersion($apiUrl);
         
-        if ($result === true) {
-            header("Location: index.php");
-            exit;
-        } else if (is_array($result) && isset($result['errors'])) {
-            // account for errors (user can't type for shit OR api is down)
-            $errorMessage = "Login failed: ";
-            if (isset($result['errors'][0]['message'])) {
-                $errorMessage .= $result['errors'][0]['message'];
-            } else {
-                $errorMessage .= "Invalid credentials or API URL.";
-            }
-            setError($errorMessage);
+        if (!$versionCheck['success']) {
+            setError($versionCheck['error']);
         } else {
-            setError("Login failed. Please check your credentials and API URL.");
+            $result = $client->authenticate($username, $password, $apiUrl, $remember);
+            
+            if ($result === true) {
+                header("Location: index.php");
+                exit;
+            } else if (is_array($result) && isset($result['errors'])) {
+                // account for errors (user can't type for shit OR api is down)
+                $errorMessage = "Login failed: ";
+                if (isset($result['errors'][0]['message'])) {
+                    $apiError = $result['errors'][0]['message'];
+                    
+                    // Check if API is unreachable (HTTP errors or cURL errors)
+                    if (strpos($apiError, 'HTTP Code') !== false || strpos($apiError, 'cURL Error') !== false) {
+                        $errorMessage = "The API server is unreachable or down, make sure that you typed it correctly.";
+                    } else {
+                        $errorMessage .= $apiError;
+                    }
+                } else {
+                    $errorMessage .= "Invalid credentials or API URL.";
+                }
+                setError($errorMessage);
+            } else {
+                setError("Login failed for an unknown reason - please contact the developer.");
+            }
         }
     }
 }
@@ -47,14 +71,19 @@ include('header.php');
 ?>
 
 <div class="login-box">
-    <h2>Login to Steel</h2>
+    <h2>Login to Steel-1.1</h2>
+
+    <p>
+        This version of Steel is for the v1.1 REST API <b>only.</b> <br>
+        For the v1 REST API version click <a href="../steel/login.php">here</a>. <br>
+    </p>
     
     <?php if (!empty($error)): ?>
     <div class="alert alert-error">
         <?php echo h($error); ?>
     </div>
     <?php endif; ?>
-    
+    <br>
     <form method="post" action="login.php">
         <div class="form-group">
             <label for="api_url">API URL:</label>

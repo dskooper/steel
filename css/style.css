@@ -20,7 +20,7 @@ body {
     background-color: #ffffff;
     border-left: 1px solid #ccc;
     border-right: 1px solid #ccc;
-    min-height: 500px;
+    overflow: hidden;
 }
 
 /* Header */
@@ -28,6 +28,8 @@ body {
     background-color: #a8b0b2;
     padding: 10px;
     border-bottom: 2px solid #a8b0b2;
+    overflow: hidden; /* IE6 clearfix */
+    zoom: 1;
 }
 
 .header h1 {
@@ -54,6 +56,7 @@ body {
     border-bottom: 1px solid #ccc;
     padding: 0;
     overflow: hidden;
+    zoom: 1; /* Trigger hasLayout in IE6 */
 }
 
 .nav a {
@@ -78,6 +81,8 @@ body {
 /* Content area */
 .content {
     padding: 15px;
+    overflow: hidden; /* IE6 clearfix */
+    zoom: 1;
 }
 
 .sidebar {
@@ -89,7 +94,7 @@ body {
 /* Forms */
 .form-group {
     margin-bottom: 15px;
-    position: relative;
+    zoom: 1; /* Trigger hasLayout in IE6 */
 }
 
 .form-group label {
@@ -101,7 +106,7 @@ body {
 .form-group input[type="text"],
 .form-group input[type="password"],
 .form-group textarea {
-    width: 95%;
+    width: 97%;
     padding: 5px;
     border: 1px solid #ccc;
     font-size: 12px;
@@ -109,15 +114,29 @@ body {
 }
 
 .form-group textarea {
+    width: 90%;
+}
+
+.form-group textarea {
     height: 80px;
-    resize: none;
+    resize: none; /* Disable resize on modern browsers */
+}
+
+* html .form-group textarea {
+    /* IE6 doesn't support resize property anyway */
+}
+
+.form-group input[type="file"] {
+    width: auto;
+    border: none;
+    padding: 0;
 }
 
 .form-group input[type="checkbox"] {
     margin-right: 5px;
 }
 
-.form-group .help-text {
+.help-text {
     font-size: 11px;
     color: #666;
     margin-top: 3px;
@@ -125,7 +144,7 @@ body {
 
 /* Buttons */
 .btn {
-    padding: 3px 3px;
+    padding: 5px 10px;
     border: 1px solid #ccc;
     background-color: #f5f5f5;
     color: #333;
@@ -169,6 +188,8 @@ body {
 .tweet {
     border-bottom: 1px solid #e1e8ed;
     padding: 10px 0;
+    overflow: hidden; /* IE6 clearfix */
+    zoom: 1; /* Trigger hasLayout */
 }
 
 .tweet-header {
@@ -226,11 +247,23 @@ body {
 }
 
 .tweet-image img {
-    max-width: 300px;
-    width: 100%;
+    width: 300px;
     height: auto;
     border: 1px solid #e1e8ed;
-    border-radius: 5px;
+}
+
+.tweet-video {
+    margin-left: 58px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.tweet-video video {
+    width: 300px;
+    height: auto;
+    border: 1px solid #e1e8ed;
+    border-radius: 4px;
+    background-color: #000;
 }
 
 .tweet-actions {
@@ -255,6 +288,8 @@ body {
     padding: 15px;
     border: 1px solid #e1e8ed;
     margin-bottom: 15px;
+    overflow: hidden; /* IE6 clearfix */
+    zoom: 1;
 }
 
 .profile-avatar {
@@ -295,6 +330,7 @@ body {
 .profile-stat {
     display: inline;
     margin-right: 15px;
+    zoom: 1; /* IE6 inline fix */
 }
 
 .profile-stat strong {
@@ -307,6 +343,8 @@ body {
     border: 1px solid #e1e8ed;
     padding: 10px;
     margin-bottom: 15px;
+    overflow: hidden; /* IE6 clearfix */
+    zoom: 1;
 }
 
 .box-title {
@@ -327,10 +365,8 @@ body {
 .user-item {
     padding: 8px 0;
     border-bottom: 1px solid #e1e8ed;
-}
-
-.user-item:last-child {
-    border-bottom: none;
+    overflow: hidden; /* IE6 clearfix */
+    zoom: 1;
 }
 
 .user-avatar {
@@ -404,13 +440,16 @@ body {
     color: #a8b0b2;
 }
 
+/*
 .login-box .form-group input[type="text"],
 .login-box .form-group input[type="password"] {
     width: 93%;
 }
+*/
 
 .login-box .btn {
-    width: 100%;
+    margin: auto;
+    display: block;
 }
 
 /* Pagination */
@@ -518,7 +557,70 @@ body {
 }
 
 * html .container {
-    height: 1%;
+    height: 1%; /* Triggers hasLayout, makes container expand with content */
+    width: 798px; /* Subtract border widths (2px) for IE6 box model */
+}
+
+* html .sidebar {
+    display: inline; /* IE6 double margin fix for floats */
+    width: 240px; /* Slightly narrower for IE6 */
+}
+
+* html .tweet-avatar {
+    display: inline; /* IE6 double margin fix */
+}
+
+* html .profile-avatar {
+    display: inline; /* IE6 double margin fix */
+}
+
+* html .user-avatar {
+    display: inline; /* IE6 double margin fix */
+}
+
+* html .nav a {
+    display: inline; /* IE6 double margin fix */
+}
+
+* html .form-group {
+    /* margin-bottom: 5px; Reduce space between input and counter on IE6 */
+    text-align: center;
+}
+
+* html .form-group label input,
+* html .form-group textarea {
+    width: 78%; /* IE6 box model adjustment for padding/border */
+}
+
+* html .form-group .checkbox {
+    width: 10%;
+}
+
+* html .tweet-image img {
+    width: 280px; /* Fixed width for IE6 */
+}
+
+* html .btn {
+    display: inline;
+    zoom: 1; /* Triggers hasLayout for inline-block behavior */
+    padding: 3px 6px; /* Smaller for IE6 */
+}
+
+* html .search-tabs a {
+    display: inline;
+    zoom: 1; /* Triggers hasLayout for inline-block behavior */
+}
+
+* html .login-box {
+    width: 400px; /* Adjust for IE6 box model: subtract padding (40px) and border (2px) */
+}
+
+* html .login-box .btn {
+    /*width: 98%;  Account for padding and border in IE6 */
+}
+
+* html .box {
+    width: auto; /* Let content determine width in IE6 */
 }
 
 /* Footer */
@@ -544,11 +646,12 @@ body {
 
 /* Character counter */
 .char-counter {
-    position: absolute;
-    top: 5px;
-    right: 0px;
+    float: right;
     font-size: 11px;
     color: #657786;
+    margin-top: -30px;
+    margin-right: 5px;
+    margin-bottom: 5px;
 }
 
 .char-counter.warning {
@@ -557,4 +660,8 @@ body {
 
 .char-counter.error {
     color: #f44336;
+}
+
+* html .char-counter {
+    margin-top: -10px; /* Less negative margin for IE6 */
 }

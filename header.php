@@ -15,7 +15,7 @@ $client = getTwitterClient();
 <body>
     <div class="container">
         <div class="header">
-            <h1>Steel</h1>
+            <h1>Steel-1.1</h1>
             <?php if ($client->isLoggedIn()): ?>
             <div class="user-info">
                 Logged in as: <strong>@<?php echo h($client->getScreenName()); ?></strong> | 

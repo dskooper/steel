@@ -1,7 +1,7 @@
 <?php
 require_once('utils.php');
 
-$pageTitle = "About Steel";
+$pageTitle = "About Steel-1.1";
 
 $error = getError();
 $success = '';
@@ -26,14 +26,14 @@ include('header.php');
 <?php endif; ?>
 
 <div class="main-content">
-    <h2>About Steel</h2>
+    <h2>About Steel-1.1</h2>
     
     <div class="box">
         <div class="box-content">
-            <h3>Welcome to Steel</h3>
             <p>
-                Steel is a lightweight web frontend for compatible implementations of Twitter's v1.0 and v1.1 REST API.
-                Designed to support IE6 and above, it is surprisingly simple while providing as many core features as possible.
+                Steel-1.1 is a lightweight web frontend for compatible implementations of Twitter's v1.1 REST API. <br>
+                For the v1 REST API version click <a href="../steel/login.php">here</a>. <br>
+                Designed to support classic IE, it is surprisingly simple while providing as many core features as possible.
             </p>
 
             <br>
@@ -54,8 +54,8 @@ include('header.php');
                 <?php if ($client->isLoggedIn()): ?>
                     You are currently logged in. Head <a href="index.php">home</a> to get started!
                 <?php else: ?>
-                    To use Steel, you'll need to <b>provide your own API root</b>, including the protocol.
-                    <small>For example: http://example-twitter-api.net</small>
+                    To use Steel, you'll need to <b>provide your own API root</b>, including the protocol. <br>
+                    <small>For example: http://example-twitter-api.net</small> <br>
                     Steel uses xAuth for authentication, which means almost any API implementation should work.
                 <?php endif; ?>
             </p>
@@ -64,8 +64,8 @@ include('header.php');
             
             <h3>Security</h3>
             <p>
-                Steel is a client-side application and therefore does not store credentials on the server.
-                All authentication and API requests are handled directly between the client and the configured REST API.
+                Steel is a client-side application and therefore does not store credentials on the server. <br>
+                All authentication and API requests are handled directly between the client and the configured REST API. <br>
                 Additionally, Steel's cookies are configured to expire after 5 days, after which you will need to log in again.
             </p>
 
@@ -73,8 +73,12 @@ include('header.php');
             
             <h3>Compatibility</h3>
             <p>
-                Steel <b><i>should</i></b> work with Internet Explorer 6 and above, however it is confirmed to work with at least IE7.
-                If issues arise with IE6, please report them by <a href="https://kooper.online/info.html">contacting me</a>.
+                <ul style="margin-left: 20px; margin-bottom: 10px;">
+                    <li>Absolute minimum: Internet Explorer 6, Firefox 1</li>
+                    <li>Recommended minimum: Internet Explorer 7, Firefox 2, Chrome 1</li>
+                </ul>
+                If any issues arise (or you would like to suggest features), please report them by <a href="https://kooper.online/info.html">contacting me</a>. <br>
+                <i><b>This does not include browsers such as IE6, Firefox 1 or pre-WebKit NetFront. Issues with these will not be fixed.</i></b>
             </p>
         </div>
     </div>

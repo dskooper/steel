@@ -155,7 +155,7 @@ include('header.php');
         <div class="conversation-item clearfix" onclick="window.location='messages.php?with=<?php echo h($screenName); ?>';">
             <div class="user-avatar">
                 <?php if (isset($conv['user']['profile_image_url'])): ?>
-                <img src="<?php echo h($conv['user']['profile_image_url']); ?>" alt="Avatar">
+                <img src="<?php echo h(forceHttpsImage($conv['user']['profile_image_url'])); ?>" alt="Avatar">
                 <?php else: ?>
                 <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Avatar">
                 <?php endif; ?>

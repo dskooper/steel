@@ -25,21 +25,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status = $_POST['status'];
         $mediaPath = null;
         
-        // Uploading images
-        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            $allowedTypes = array('image/jpeg', 'image/png', 'image/gif');
-            $fileType = $_FILES['image']['type'];
+        // Handle chunked uploads (from JavaScript)
+        if (isset($_POST['chunked_upload_id']) && isset($_POST['chunked_file_name'])) {
+            $uploadDir = sys_get_temp_dir() . '/chunked_uploads';
+            $uploadId = $_POST['chunked_upload_id'];
+            $fileName = $_POST['chunked_file_name'];
+            $mediaPath = $uploadDir . '/' . $uploadId . '_final_' . $fileName;
             
-            if (in_array($fileType, $allowedTypes)) {
-                $uploadDir = sys_get_temp_dir();
-                $mediaPath = $uploadDir . '/' . uniqid('tweet_') . '_' . basename($_FILES['image']['name']);
+            if (!file_exists($mediaPath)) {
+                setError("Chunked upload file not found.");
+                $mediaPath = null;
+            }
+        }
+        // Traditional file upload  
+        else if (isset($_FILES['media']) && $_FILES['media']['error'] === UPLOAD_ERR_OK) {
+            $allowedTypes = array(
+                'image/jpeg', 'image/jpg', 'image/png', 'image/gif',
+                'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv'
+            );
+            $fileType = $_FILES['media']['type'];
+            
+            // Additional validation for file extension
+            $fileName = $_FILES['media']['name'];
+            $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $allowedExts = array('jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'avi', 'wmv');
+            
+            if (in_array($fileType, $allowedTypes) && in_array($fileExt, $allowedExts)) {
+                // Check file size (max 15MB for videos, 5MB for images)
+                $maxSize = (strpos($fileType, 'video/') === 0) ? 15 * 1024 * 1024 : 5 * 1024 * 1024;
                 
-                if (!move_uploaded_file($_FILES['image']['tmp_name'], $mediaPath)) {
-                    setError("Failed to upload image.");
-                    $mediaPath = null;
+                if ($_FILES['media']['size'] > $maxSize) {
+                    $sizeMB = round($maxSize / (1024 * 1024));
+                    setError("File is too large. Maximum size is {$sizeMB}MB.");
+                } else {
+                    $uploadDir = sys_get_temp_dir();
+                    $mediaPath = $uploadDir . '/' . uniqid('tweet_') . '_' . basename($_FILES['media']['name']);
+                    
+                    if (!move_uploaded_file($_FILES['media']['tmp_name'], $mediaPath)) {
+                        setError("Failed to upload media file.");
+                        $mediaPath = null;
+                    }
                 }
             } else {
-                setError("Invalid image type. Only JPEG, PNG, and GIF are allowed.");
+                setError("Invalid file type. Supported formats: JPEG, PNG, GIF, MP4, MOV, AVI, WMV.");
             }
         }
         
@@ -121,8 +149,11 @@ include('header.php');
                 <div class="char-counter" id="char-count">140</div>
             </div>
             <div class="form-group">
-                <label for="image">Add Image (optional):</label>
-                <input type="file" name="image" id="image" accept="image/jpeg,image/png,image/gif" />
+                <label for="media">Add Media (optional):</label>
+                <input type="file" name="media" id="media" accept="image/jpeg,image/jpg,image/png,image/gif,video/mp4,video/quicktime,video/x-msvideo" />
+                <small style="display: block; margin-top: 5px; color: #666;">
+                    Supported: Images (JPEG, PNG, GIF) up to 5MB, Videos (MP4, MOV, AVI) up to 15MB
+                </small>
             </div>
             <div class="form-group">
                 <input type="submit" name="tweet" value="Tweet" class="btn btn-primary" />

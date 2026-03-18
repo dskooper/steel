@@ -124,7 +124,7 @@ include('header.php');
         <div style="margin-bottom: 10px;">
             <strong>Current Image:</strong><br>
             <?php if (isset($profile['profile_image_url'])): ?>
-            <img src="<?php echo h($profile['profile_image_url']); ?>" alt="Profile" style="width: 73px; height: 73px; border: 1px solid #ccc; margin-top: 5px;">
+            <img src="<?php echo h(forceHttpsImage($profile['profile_image_url'])); ?>" alt="Profile" style="width: 73px; height: 73px; border: 1px solid #ccc; margin-top: 5px;">
             <?php endif; ?>
         </div>
         

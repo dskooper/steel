@@ -49,7 +49,7 @@ include('header.php');
 <div class="tweet clearfix">
     <div class="tweet-avatar">
         <?php if (isset($tweet['user']['profile_image_url'])): ?>
-        <img src="<?php echo h($tweet['user']['profile_image_url']); ?>" alt="Avatar">
+        <img src="<?php echo h(forceHttpsImage($tweet['user']['profile_image_url'])); ?>" alt="Avatar">
         <?php else: ?>
         <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Avatar">
         <?php endif; ?>
@@ -70,7 +70,7 @@ include('header.php');
     </div>
     
     <div class="tweet-text" onclick="window.location.href='tweet.php?id=<?php echo h($tweet['id']); ?>';" style="cursor: pointer;">
-        <?php echo formatTweet($tweet['text']); ?>
+        <?php echo formatTweet(getTweetText($tweet)); ?>
     </div>
     
     <?php echo renderTweetImages($tweet); ?>

@@ -48,7 +48,7 @@ include('header.php');
     <div class="user-item clearfix">
         <div class="user-avatar">
             <?php if (isset($user['profile_image_url'])): ?>
-            <img src="<?php echo h($user['profile_image_url']); ?>" alt="Avatar">
+            <img src="<?php echo h(forceHttpsImage($user['profile_image_url'])); ?>" alt="Avatar">
             <?php else: ?>
             <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Avatar">
             <?php endif; ?>

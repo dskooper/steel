@@ -50,12 +50,14 @@ class TwitterClient {
             $cookieData = json_decode($_COOKIE['steel_remember'], true);
             
             if (isset($cookieData['token']) && isset($cookieData['secret']) && 
-                isset($cookieData['user_id']) && isset($cookieData['screen_name'])) {
+                isset($cookieData['user_id']) && isset($cookieData['screen_name']) &&
+                isset($cookieData['api_url'])) {
                 
                 $this->accessToken = $cookieData['token'];
                 $this->accessTokenSecret = $cookieData['secret'];
                 $this->userId = $cookieData['user_id'];
                 $this->screenName = $cookieData['screen_name'];
+                $this->apiUrl = $cookieData['api_url'];
                 
                 $this->saveSession();
             }
@@ -68,7 +70,8 @@ class TwitterClient {
             'token' => $this->accessToken,
             'secret' => $this->accessTokenSecret,
             'user_id' => $this->userId,
-            'screen_name' => $this->screenName
+            'screen_name' => $this->screenName,
+            'api_url' => $this->apiUrl
         ];
         
         setcookie(
@@ -84,6 +87,73 @@ class TwitterClient {
     
     private function setApiUrl($url) {
     	$this->apiUrl = $url;
+    }
+    
+    // Check if API supports v1.1 endpoints
+    public function checkApiVersion($apiUrl) {
+        // Try to access a v1.1 endpoint that doesn't require authentication
+        $testUrl = $apiUrl . '/1.1/help/configuration.json';
+        
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $testUrl);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_USERAGENT, 'Steel-Web/1.0');
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        
+        $realIp = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
+        $headers = array(
+            'X-Forwarded-For: ' . $realIp,
+            'X-Real-IP: ' . $realIp,
+        );
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($curl);
+        curl_close($curl);
+        
+        // If we get a valid response (200) or even a 401/404, it means v1.1 exists
+        // A 404 on this specific endpoint is fine - it means the API exists but doesn't have this endpoint
+        if ($httpCode >= 200 && $httpCode < 500) {
+            // Try to decode JSON to verify it's a Twitter-like API
+            $decoded = json_decode($response, true);
+            if (json_last_error() === JSON_ERROR_NONE || $httpCode === 401) {
+                return ['success' => true, 'version' => '1.1'];
+            }
+        }
+        
+        // If v1.1 fails, check if v1 endpoints exist
+        $testUrlV1 = $apiUrl . '/1/help/configuration.json';
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $testUrlV1);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_USERAGENT, 'Steel-Web/1.0');
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        
+        $response = curl_exec($curl);
+        $httpCodeV1 = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+        
+        if ($httpCodeV1 >= 200 && $httpCodeV1 < 500) {
+            return [
+                'success' => false,
+                'version' => '1',
+                'error' => 'This API only supports Twitter v1 endpoints. Steel requires v1.1 endpoints to function properly (especially for video support).'
+            ];
+        }
+        
+        // Neither version works
+        return [
+            'success' => false,
+            'version' => 'unknown',
+            'error' => 'Unable to reach API or API does not support Twitter v1.1 endpoints. Please check the URL and try again.'
+        ];
     }
 
     // Authenticate with xAuth
@@ -155,10 +225,11 @@ class TwitterClient {
 
     // Get user's home timeline
     public function getHomeTimeline($count = 20, $max_id = null) {
-        $url = $this->apiUrl . '/1/statuses/home_timeline.json';
+        $url = $this->apiUrl . '/1.1/statuses/home_timeline.json';
         $params = array(
             'count' => $count,
-            'include_entities' => 'true'
+            'include_entities' => 'true',
+            'tweet_mode' => 'extended'
         );
         
         if ($max_id) {
@@ -170,10 +241,11 @@ class TwitterClient {
 
     // Get user's mentions timeline
     public function getMentionsTimeline($count = 20, $max_id = null) {
-        $url = $this->apiUrl . '/1/statuses/mentions.json';
+        $url = $this->apiUrl . '/1.1/statuses/mentions.json';
         $params = array(
             'count' => $count,
-            'include_entities' => 'true'
+            'include_entities' => 'true',
+            'tweet_mode' => 'extended'
         );
         
         if ($max_id) {
@@ -185,7 +257,7 @@ class TwitterClient {
 
     // Get user's public timeline
     public function getPublicTimeline($count = 20, $max_id = null) {
-        $url = $this->apiUrl . '/1/statuses/public_timeline.json';
+        $url = $this->apiUrl . '/1.1/statuses/public_timeline.json';
         $params = array('count' => $count);
         
         if ($max_id) {
@@ -197,7 +269,7 @@ class TwitterClient {
     
     // Get user's profile
     public function getUserProfile($screenName = null) {
-        $url = $this->apiUrl . '/1/users/show.json';
+        $url = $this->apiUrl . '/1.1/users/show.json';
         $params = array();
         
         if ($screenName) {
@@ -251,7 +323,7 @@ class TwitterClient {
             return $this->postTweetWithMedia($status, $mediaPath);
         }
         
-        $url = $this->apiUrl . '/1/statuses/update.json';
+        $url = $this->apiUrl . '/1.1/statuses/update.json';
         $params = array('status' => $status);
         
         return $this->makeRequest('POST', $url, $params);
@@ -259,11 +331,39 @@ class TwitterClient {
     
     // Post a tweet with media
     private function postTweetWithMedia($status, $mediaPath) {
-        $url = $this->apiUrl . '/1/statuses/update_with_media.json';
-        
         if (!file_exists($mediaPath)) {
             return false;
         }
+        
+        // Detect file type
+        $mimeType = mime_content_type($mediaPath);
+        $isVideo = strpos($mimeType, 'video/') === 0;
+        $isAnimatedGif = false;
+        
+        // Check if it's an animated GIF
+        if ($mimeType === 'image/gif') {
+            $isAnimatedGif = $this->isAnimatedGif($mediaPath);
+        }
+        
+        // Use chunked upload for videos and animated GIFs
+        if ($isVideo || $isAnimatedGif) {
+            $mediaId = $this->uploadMediaChunked($mediaPath, $mimeType);
+            if (!$mediaId) {
+                return false;
+            }
+            
+            // Post tweet with media_ids parameter
+            $url = $this->apiUrl . '/1.1/statuses/update.json';
+            $params = array(
+                'status' => $status,
+                'media_ids' => $mediaId
+            );
+            
+            return $this->makeRequest('POST', $url, $params);
+        }
+        
+        // For static images, use the simple endpoint
+        $url = $this->apiUrl . '/1.1/statuses/update_with_media.json';
         
         // Check if file is an image
         $fileInfo = getimagesize($mediaPath);
@@ -278,13 +378,190 @@ class TwitterClient {
         
         return $this->makeRequest('POST', $url, $params, true, true);
     }
+    
+    // Check if a GIF is animated
+    private function isAnimatedGif($filename) {
+        if (!($fh = @fopen($filename, 'rb'))) {
+            return false;
+        }
+        
+        $count = 0;
+        while (!feof($fh) && $count < 2) {
+            $chunk = fread($fh, 1024 * 100); // Read 100kb at a time
+            $count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00[\x2C\x21]#s', $chunk, $matches);
+        }
+        
+        fclose($fh);
+        return $count > 1;
+    }
+    
+    // Upload media using chunked upload (required for videos and animated GIFs)
+    private function uploadMediaChunked($mediaPath, $mimeType) {
+        if (!file_exists($mediaPath)) {
+            return false;
+        }
+        
+        $fileSize = filesize($mediaPath);
+        $mediaCategory = 'tweet_image';
+        
+        // Determine media category
+        if (strpos($mimeType, 'video/') === 0) {
+            $mediaCategory = 'tweet_video';
+        } else if ($mimeType === 'image/gif') {
+            $mediaCategory = 'tweet_gif';
+        }
+        
+        // INIT phase
+        $url = $this->apiUrl . '/1.1/media/upload.json';
+        $params = array(
+            'command' => 'INIT',
+            'total_bytes' => $fileSize,
+            'media_type' => $mimeType,
+            'media_category' => $mediaCategory
+        );
+        
+        $response = $this->makeRequest('POST', $url, $params);
+        
+        if (!$response || !isset($response['media_id_string'])) {
+            return false;
+        }
+        
+        $mediaId = $response['media_id_string'];
+        
+        // APPEND phase - upload file in chunks
+        $fp = fopen($mediaPath, 'rb');
+        $segmentIndex = 0;
+        $chunkSize = 1024 * 1024 * 5; // 5MB chunks
+        
+        while (!feof($fp)) {
+            $chunk = fread($fp, $chunkSize);
+            
+            // Use custom multipart request for APPEND
+            if (!$this->uploadMediaChunk($url, $mediaId, $chunk, $segmentIndex)) {
+                fclose($fp);
+                return false;
+            }
+            
+            $segmentIndex++;
+        }
+        
+        fclose($fp);
+        
+        // FINALIZE phase
+        $params = array(
+            'command' => 'FINALIZE',
+            'media_id' => $mediaId
+        );
+        
+        $response = $this->makeRequest('POST', $url, $params);
+        
+        if (!$response) {
+            return false;
+        }
+        
+        // Check if processing is required (for videos)
+        if (isset($response['processing_info'])) {
+            // Wait for processing to complete
+            if (!$this->waitForMediaProcessing($url, $mediaId)) {
+                return false;
+            }
+        }
+        
+        return $mediaId;
+    }
+    
+    // Upload a single chunk of media
+    private function uploadMediaChunk($url, $mediaId, $chunk, $segmentIndex) {
+        $boundary = '----WebKitFormBoundary' . uniqid();
+        
+        $body = '';
+        $body .= "--{$boundary}\r\n";
+        $body .= "Content-Disposition: form-data; name=\"command\"\r\n\r\n";
+        $body .= "APPEND\r\n";
+        
+        $body .= "--{$boundary}\r\n";
+        $body .= "Content-Disposition: form-data; name=\"media_id\"\r\n\r\n";
+        $body .= "{$mediaId}\r\n";
+        
+        $body .= "--{$boundary}\r\n";
+        $body .= "Content-Disposition: form-data; name=\"segment_index\"\r\n\r\n";
+        $body .= "{$segmentIndex}\r\n";
+        
+        $body .= "--{$boundary}\r\n";
+        $body .= "Content-Disposition: form-data; name=\"media\"; filename=\"blob\"\r\n";
+        $body .= "Content-Type: application/octet-stream\r\n\r\n";
+        $body .= $chunk . "\r\n";
+        $body .= "--{$boundary}--\r\n";
+        
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+        curl_setopt($curl, CURLOPT_USERAGENT, 'Steel-Web-Mobile/1.0');
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 60);
+        
+        $realIp = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
+        $headers = array(
+            'Authorization: OAuth oauth_token="' . $this->accessToken . '"',
+            'Content-Type: multipart/form-data; boundary=' . $boundary,
+            'X-Forwarded-For: ' . $realIp,
+            'X-Real-IP: ' . $realIp
+        );
+        
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+        
+        return ($httpCode >= 200 && $httpCode < 300);
+    }
+    
+    // Wait for media processing to complete
+    private function waitForMediaProcessing($url, $mediaId, $maxAttempts = 20) {
+        $attempts = 0;
+        
+        while ($attempts < $maxAttempts) {
+            $params = array(
+                'command' => 'STATUS',
+                'media_id' => $mediaId
+            );
+            
+            $response = $this->makeRequest('GET', $url, $params);
+            
+            if (!$response || !isset($response['processing_info'])) {
+                return false;
+            }
+            
+            $state = $response['processing_info']['state'];
+            
+            if ($state === 'succeeded') {
+                return true;
+            } else if ($state === 'failed') {
+                return false;
+            }
+            
+            // Wait before checking again
+            $checkAfterSecs = isset($response['processing_info']['check_after_secs']) 
+                ? $response['processing_info']['check_after_secs'] 
+                : 5;
+            
+            sleep($checkAfterSecs);
+            $attempts++;
+        }
+        
+        return false;
+    }
 
     // Search for tweets
     public function search($query, $count = 20) {
-        $url = $this->apiUrl . '/1/search/tweets.json';
+        $url = $this->apiUrl . '/1.1/search/tweets.json';
         $params = array(
             'q' => $query,
-            'count' => $count
+            'count' => $count,
+            'tweet_mode' => 'extended'
         );
         
         return $this->makeRequest('GET', $url, $params);
@@ -292,7 +569,7 @@ class TwitterClient {
 
     // Search for users
     public function searchUsers($query, $count = 20) {
-        $url = $this->apiUrl . '/1/users/search.json';
+        $url = $this->apiUrl . '/1.1/users/search.json';
         $params = array(
             'q' => $query,
             'count' => $count
@@ -303,7 +580,7 @@ class TwitterClient {
 
     // Follow a user
     public function followUser($screenName) {
-        $url = $this->apiUrl . '/1/friendships/create.json';
+        $url = $this->apiUrl . '/1.1/friendships/create.json';
         $params = array('screen_name' => $screenName);
         
         return $this->makeRequest('POST', $url, $params);
@@ -311,7 +588,7 @@ class TwitterClient {
 
     // Unfollow a user
     public function unfollowUser($screenName) {
-        $url = $this->apiUrl . '/1/friendships/destroy.json';
+        $url = $this->apiUrl . '/1.1/friendships/destroy.json';
         $params = array('screen_name' => $screenName);
         
         return $this->makeRequest('POST', $url, $params);
@@ -319,10 +596,11 @@ class TwitterClient {
 
     // Get user's tweets
     public function getUserTweets($screenName = null, $count = 20, $max_id = null) {
-        $url = $this->apiUrl . '/1/statuses/user_timeline.json';
+        $url = $this->apiUrl . '/1.1/statuses/user_timeline.json';
         $params = array(
             'count' => $count,
-            'include_entities' => 'true'
+            'include_entities' => 'true',
+            'tweet_mode' => 'extended'
         );
         
         if ($screenName) {
@@ -377,7 +655,7 @@ class TwitterClient {
 
     // Update profile
     public function updateProfile($name, $description, $location = null, $website = null) {
-        $url = $this->apiUrl . '/1/account/update_profile.json';
+        $url = $this->apiUrl . '/1.1/account/update_profile.json';
         $params = array(
             'name' => $name,
             'description' => $description
@@ -396,7 +674,7 @@ class TwitterClient {
 
     // Update profile image
     public function updateProfileImage($imagePath) {
-        $url = $this->apiUrl . '/1/account/update_profile_image.json';
+        $url = $this->apiUrl . '/1.1/account/update_profile_image.json';
         
         if (!file_exists($imagePath)) {
             return false;
@@ -409,7 +687,7 @@ class TwitterClient {
 
     // Update profile banner
     public function updateProfileBanner($imagePath) {
-        $url = $this->apiUrl . '/1/account/update_profile_banner.json';
+        $url = $this->apiUrl . '/1.1/account/update_profile_banner.json';
         
         if (!file_exists($imagePath)) {
             return false;
@@ -422,7 +700,7 @@ class TwitterClient {
 
     // Favorite a tweet
     public function favoriteTweet($tweetId) {
-        $url = $this->apiUrl . '/1/favorites/create.json';
+        $url = $this->apiUrl . '/1.1/favorites/create.json';
         $params = array('id' => $tweetId);
         
         return $this->makeRequest('POST', $url, $params);
@@ -430,7 +708,7 @@ class TwitterClient {
 
     // Unfavorite a tweet
     public function unfavoriteTweet($tweetId) {
-        $url = $this->apiUrl . '/1/favorites/destroy.json';
+        $url = $this->apiUrl . '/1.1/favorites/destroy.json';
         $params = array('id' => $tweetId);
         
         return $this->makeRequest('POST', $url, $params);
@@ -438,14 +716,14 @@ class TwitterClient {
 
     // Repost a tweet
     public function repostTweet($tweetId) {
-        $url = $this->apiUrl . '/1/statuses/retweet/' . $tweetId . '.json';
+        $url = $this->apiUrl . '/1.1/statuses/retweet/' . $tweetId . '.json';
         
         return $this->makeRequest('POST', $url);
     }
 
     // Post a reply to a tweet
     public function replyToTweet($status, $inReplyToStatusId) {
-        $url = $this->apiUrl . '/1/statuses/update.json';
+        $url = $this->apiUrl . '/1.1/statuses/update.json';
         $params = array(
             'status' => $status,
             'in_reply_to_status_id' => $inReplyToStatusId
@@ -456,21 +734,21 @@ class TwitterClient {
 
     // Unrepost a tweet
     public function unrepostTweet($tweetId) {
-        $url = $this->apiUrl . '/1/statuses/destroy/' . $tweetId . '.json';
+        $url = $this->apiUrl . '/1.1/statuses/destroy/' . $tweetId . '.json';
         
         return $this->makeRequest('POST', $url);
     }
 
     // Delete a tweet
     public function deleteTweet($tweetId) {
-        $url = $this->apiUrl . '/1/statuses/destroy/' . $tweetId . '.json';
+        $url = $this->apiUrl . '/1.1/statuses/destroy/' . $tweetId . '.json';
         
         return $this->makeRequest('POST', $url);
     }
 
     // Check friendship status
     public function getFriendship($targetScreenName) {
-        $url = $this->apiUrl . '/1/friendships/show.json';
+        $url = $this->apiUrl . '/1.1/friendships/show.json';
         $params = array(
             'source_screen_name' => $this->screenName,
             'target_screen_name' => $targetScreenName
@@ -481,15 +759,18 @@ class TwitterClient {
 
     // Get a single tweet by ID
     public function getTweet($tweetId) {
-        $url = $this->apiUrl . '/1/statuses/show/' . $tweetId . '.json';
-        $params = array('include_entities' => 'true');
+        $url = $this->apiUrl . '/1.1/statuses/show/' . $tweetId . '.json';
+        $params = array(
+            'include_entities' => 'true',
+            'tweet_mode' => 'extended'
+        );
         
         return $this->makeRequest('GET', $url, $params);
     }
 
     // Get similar (suggested) users
     public function getSimilarUsers($screenName, $count = 3) {
-        $url = $this->apiUrl . '/1/users/recommendations.json';
+        $url = $this->apiUrl . '/1.1/users/recommendations.json';
         $params = array('screen_name' => $screenName, 'limit' => $count);
 
         return $this->makeRequest('GET', $url, $params);
@@ -497,7 +778,7 @@ class TwitterClient {
 
     // Lookup friendship status for multiple users at once
     public function getFriendshipsLookup($screenNames) {
-        $url = $this->apiUrl . '/1/friendships/lookup.json';
+        $url = $this->apiUrl . '/1.1/friendships/lookup.json';
         
         // Convert array of screen names to comma-separated string
         if (is_array($screenNames)) {
@@ -511,7 +792,7 @@ class TwitterClient {
 
     // Get followers list
     public function getFollowers($screenName = null, $count = 20, $cursor = -1) {
-        $url = $this->apiUrl . '/1/followers/list.json';
+        $url = $this->apiUrl . '/1.1/followers/list.json';
         $params = array(
             'count' => $count,
             'cursor' => $cursor,
@@ -530,8 +811,11 @@ class TwitterClient {
     
     // Get user's favorites
     public function getFavorites($screenName = null, $count = 20, $max_id = null) {
-        $url = $this->apiUrl . '/1/favorites/list.json';
-        $params = array('count' => $count);
+        $url = $this->apiUrl . '/1.1/favorites/list.json';
+        $params = array(
+            'count' => $count,
+            'tweet_mode' => 'extended'
+        );
         
         if ($screenName) {
             $params['screen_name'] = $screenName;
@@ -548,13 +832,13 @@ class TwitterClient {
     
     // Get activity summary of a post (favorites, reposts, replies)
     public function getPostActivitySummary($postId) {
-        $url = $this->apiUrl . "/1/statuses/{$postId}/activity/summary.json";
+        $url = $this->apiUrl . "/1.1/statuses/{$postId}/activity/summary.json";
         return $this->makeRequest('GET', $url);
     }
     
     // Look up users by user IDs
     public function getUsersLookup($userIds) {
-        $url = $this->apiUrl . '/1/users/lookup.json';
+        $url = $this->apiUrl . '/1.1/users/lookup.json';
         
         // Convert array of user IDs to comma-separated string
         if (is_array($userIds)) {
@@ -568,7 +852,7 @@ class TwitterClient {
     
     // Get following list (friends in Twitter API terminology)
     public function getFollowing($screenName = null, $count = 20, $cursor = -1) {
-        $url = $this->apiUrl . '/1/friends/list.json';
+        $url = $this->apiUrl . '/1.1/friends/list.json';
         $params = array(
             'count' => $count,
             'cursor' => $cursor,
@@ -851,7 +1135,7 @@ class TwitterClient {
 
     // Get direct messages sent to the user
     public function getDirectMessages($count = 20, $max_id = null) {
-        $url = $this->apiUrl . '/1/direct_messages.json';
+        $url = $this->apiUrl . '/1.1/direct_messages.json';
         $params = array('count' => $count);
         
         if ($max_id) {
@@ -863,7 +1147,7 @@ class TwitterClient {
     
     // Get direct messages sent by the user
     public function getSentDirectMessages($count = 20, $max_id = null) {
-        $url = $this->apiUrl . '/1/direct_messages/sent.json';
+        $url = $this->apiUrl . '/1.1/direct_messages/sent.json';
         $params = array('count' => $count);
         
         if ($max_id) {
@@ -939,8 +1223,8 @@ class TwitterClient {
         }
         
         // Call API with appropriate parameters
-        $received = $this->makeRequest('GET', $this->apiUrl . '/1/direct_messages.json', $receivedParams);
-        $sent = $this->makeRequest('GET', $this->apiUrl . '/1/direct_messages/sent.json', $sentParams);
+        $received = $this->makeRequest('GET', $this->apiUrl . '/1.1/direct_messages.json', $receivedParams);
+        $sent = $this->makeRequest('GET', $this->apiUrl . '/1.1/direct_messages/sent.json', $sentParams);
         
         $conversation = array();
         
@@ -984,7 +1268,7 @@ class TwitterClient {
     
     // Send a direct message
     public function sendDirectMessage($screenName, $text) {
-        $url = $this->apiUrl . '/1/direct_messages/new.json';
+        $url = $this->apiUrl . '/1.1/direct_messages/new.json';
         $params = array(
             'screen_name' => $screenName,
             'text' => $text
