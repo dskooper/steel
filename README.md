@@ -3,7 +3,7 @@
 Steel is a lightweight (and almost feature-complete) web frontend for Twitter's 1.0 and 1.1 REST APIs.
 
 > [!NOTE]
-> You are currently viewing the "main" branch which uses `/1.1/` endpoints! <br>
+> You are currently viewing the "v1.1" branch which (as you can guess) uses the `/1.1/` endpoints! <br>
 > If you want to use APIs which are only compatible with Twitter's 1.0 REST API, view [this branch](https://github.com/dskooper/steel/tree/main) instead.
 
 ## Usage:
